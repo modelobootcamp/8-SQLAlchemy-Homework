@@ -262,12 +262,12 @@ first_row.__dict__
 
 
 
-    {'_sa_instance_state': <sqlalchemy.orm.state.InstanceState at 0x1739dbbf240>,
-     'prcp': 0.08,
+    {'_sa_instance_state': <sqlalchemy.orm.state.InstanceState at 0x175ce5cd518>,
      'date': '2010-01-01',
      'id': 1,
-     'tobs': 65.0,
-     'station': 'USC00519397'}
+     'prcp': 0.08,
+     'station': 'USC00519397',
+     'tobs': 65.0}
 
 
 
@@ -1135,3 +1135,77 @@ plt.show()
 
 ![png](output_38_0.png)
 
+
+
+```python
+'''Calculate the Daily Normals'''
+
+#create a function called daily_normals that will calculate the daily normals for a specific date
+def daily_normals(day_date):
+    temps = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+                          filter(func.strftime("%m-%d", msmt.date) == day_date).all()
+    return temps
+    
+#create a list of dates for your trip 
+last_twelve_months
+```
+
+
+
+
+    datetime.datetime(2016, 8, 23, 0, 0)
+
+
+
+
+```python
+'''Calculate the Daily Normals'''
+#choose a start and end date for the trip
+trip_start = dt.date(2018,7,3)
+trip_end = dt.date(2018,7,17)
+```
+
+
+```python
+#create a function called daily_normals that will calculate the daily normals for a specific date
+def daily_normals(day_date):
+    temps = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+                          filter(func.strftime("%m-%d", Measurement.date) == day_date).all()
+    return temps
+    
+#create a list of dates for your trip 
+trip_dates = pd.date_range(trip_start, trip_end)
+
+#format it to %m-%d
+trip_mmdd = trip_dates.strftime('%m-%d')
+
+#calculate the normals for each date string and append the results to a list
+normals_list = []
+for trip_date in trip_mmdd:
+    #unpack daily_normals
+    normals_list.append(*daily_normals(trip_date))
+
+#make a df
+normals_df = pd.DataFrame(normals_list, columns = ['Tmin', 'Tavg', 'Tmax'])
+
+#make the trip dates the index
+normals_df['Date'] = trip_dates
+normals_df = normals_df.set_index('Date')
+
+'''Area Plot'''
+
+#make a colors list
+colors = ['mediumslateblue', 'hotpink', 'palegreen']
+
+#make an area plot for the predicted temps
+normals_df.plot(kind='area', figsize=(12, 8), stacked=False, x_compat=True, color=colors, title='Predicted Temperatures for Trip', rot=45)
+
+#make the labels
+plt.xlabel('')
+plt.ylabel('Temp (F)')
+
+plt.show()
+```
+
+
+![png](output_41_0.png)
